@@ -1,0 +1,156 @@
+<html>
+
+<head>
+    <title>School Lessons</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="lessons.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+</head>
+
+<body style="background:white; font-family:Arial, Helvetica, sans-serif">
+    <div id="app">
+        <header>
+            <h1 v-text="sitename"></h1>
+            <button style="background:wheat; cursor:pointer; font-family:Arial, Helvetica, sans-serif; font-size: 22px;" v-on:click='showCheckout'>
+                {{cartItemCount}}
+                <span class="fas fa-cart-plus"></span> Checkout
+            </button>
+        </header>
+
+    
+        <main>
+            <div v-if='showlesson'>
+                <div v-for="lesson in sortedlessons">
+                    <h2 v-text="lesson.subject"></h2>
+                    <figure>
+                        <img v-bind:src="lesson.image">
+                    </figure>
+                    <p v-html="lesson.location"></p>
+                    <p>Price: {{lesson.price}}</p>
+                    <p>Available stock: {{lesson.availablePlaces -cartCount(lesson.id) }}</p>
+
+
+                    <button style="background:red; font-family:Arial, Helvetica, sans-serif; font-size: 22px;" v-on:click='addToCart(lesson)' v-if='canAddToCart(lesson)'>Add to cart</button>
+
+                    <button disabled="disabled" v-else>Add to cart</button>
+
+                    <span v-if='lesson.availablePlaces === cartCount(lesson.id)'>All out!</span>
+                    <span v-else-if="lesson.availablePlaces - cartCount(lesson.id) < 5">
+                        Only {{lesson.availablePlaces - cartCount(lesson.id)}} left!
+                    </span>
+                    <span v-else>Order Now!</span>
+
+        
+                </div>
+            </div>
+            
+            <div v-else>
+                <h2>Shopping Cart</h2>
+
+                <h3>Checkout</h3>
+
+                <p>
+                    <strong>First Name:</strong>
+                    <!-- This input field is bound to 'Name' in the 'order' object -->
+                    <input type = "text" v-on:keypress ="isLetter($event)" v-model.trim="order.name" ref="input"/>
+                </p>
+                <p>
+                    <strong>Phone Number: </strong>
+                    <!-- This input field is bound to 'Phone Number' in the 'order' object -->
+                    <input type="number" v:on:keypress="NumberOnly" v-model.trim="order.number" ref="input" />
+                </p>
+
+
+                <button style="background:green; cursor:pointer; font-family:Arial, Helvetica, sans-serif; font-size: 22px;" v-on:click="submitForm">Checkout</button>
+
+            
+            </div>
+        </main>
+    </div>
+
+    <script type="text/javascript">
+        var webstore = new Vue({
+            el: '#app',
+            data: {
+                sitename: 'School Lessons',
+                lessons: lessons,
+                cart: [],
+                showlesson: true,
+                order: {
+                    name: '',
+                    number: '',
+                    
+                },
+
+            },
+
+
+            methods: {
+                addToCart(lesson) {
+                    this.cart.push(lesson.id);
+                    // console.log('adding to cart', lesson.id)
+                },
+                showCheckout() {
+                    // console.log(this.showlesson);
+                    this.showlesson = this.showlesson ? false : true;
+                },
+                submitForm() {
+                    alert('Order submitted!')
+                },
+                
+                canAddToCart(lesson) {
+                    return lesson.availablePlaces > this.cartCount(lesson.id);
+                },
+                cartCount(id) {
+                    let count = 0;
+                    for (let i = 0; i < this.cart.length; i++) {
+                        if (this.cart[i] === id) {
+                            count++;
+                        }
+                    }
+                    return count;
+                },
+                NumbersOnly(evt){
+                  evt = (evt) ? evt: window.event;
+                  var charCode = (evt.which) ? evt.which : evt.keyCode;
+                  if ((charCode > 31 && (charCode < 48 || charCode > 57 )) && charCode !== 46){
+                    evt.preventDefault();;
+                  }
+                  else{
+                    return true;
+                  }
+                },
+                isLetter(e){
+                  let char = String.fromCharCode(e.keyCode);
+                  if(/^[A-Za-z]+$/.test(char)) return true;
+                  else e.preventDefault();
+                }
+                
+            },
+            computed: {
+                cartItemCount() {
+                    return this.cart.length;
+                },
+                // canAddToCart(lesson) {
+                //     return lesson.availablePlaces > this.cartItemCount;
+                // }
+              
+
+
+                sortedlessons() {
+                    let lessonsArray = this.lessons.slice(0);
+                    function compare(a, b) {
+                        if (a.location > b.location)
+                            return 1;
+                        if (a.location < b.location)
+                            return -1;
+                        return 0;
+                    }
+                    return lessonsArray.sort(compare);
+                }
+            },
+        });
+    </script>
+</body>
+
+</html>
