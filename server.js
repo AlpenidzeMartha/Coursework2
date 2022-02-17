@@ -24,7 +24,6 @@ app.use(function(req, res, next) {
     var filePath = path.join(__dirname,  "images", req.url);
     fs.stat(filePath, function(err, fileInfo){
         if (err) {
-            res.send('Image does not exist')
             next();
             return;
             }
@@ -72,6 +71,16 @@ app.post('/collection/:collectionName', (req, res, next) => {
     })
 
 
+    // return with object id 
+
+const ObjectID = require('mongodb').ObjectID;
+app.get('/collection/:collectionName/:id'
+, (req, res, next) => {
+req.collection.findOne({ _id: new ObjectID(req.params.id) }, (e, result) => {
+if (e) return next(e)
+res.send(result)
+})
+})
 //update an object with PUT
 app.put('/collection/:collectionName/:id', (req, res, next) => {
     req.collection.update(
@@ -107,5 +116,5 @@ app.put('/collection/:collectionName/:id/reduce/:name/:value', (req, res, next) 
 const port = process.env.PORT || 3000;
 
 app.listen(port,()=> {
-    console.log('express server is runnimg at localhost:3000')
+    console.log('express server is running at localhost:3000')
 })
