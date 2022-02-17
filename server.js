@@ -12,24 +12,19 @@ app.use(express.json());
 //serve the static files
 app.use(express.static('public'));
 
-//app.set('port', 3000)
-
-//logger middleware 
 app.use ((req,res,next) => {
-    //allow diffrent IP address
     res.setHeader('Access-Control-Allow-Origin', '*');
-    //allow different header fields
     res.header("Access-Control-Allow-Headers","*");
+    res.setHeader('Access-Control-Allow-Origin', 'PUT');
     next();
 })
 
 //static middleware                             
-
-
 app.use(function(req, res, next) {
     var filePath = path.join(__dirname,  "images", req.url);
     fs.stat(filePath, function(err, fileInfo){
         if (err) {
+            res.send('Image does not exist')
             next();
             return;
             }
@@ -49,12 +44,10 @@ const MongoClient = require('mongodb').MongoClient;
 
 // display a message for root path to show that API is working
 app.get('/', (req, res, next) => {
-    res.send('Select a collection, e.g., /collection/lessons')
+    res.send('Select a collection, e.g., /collection/lessons or /collection/order')
 })
 
 //get the collection name 
-
-
 app.param('collectionName', (req, res, next, collectionName) => {
     req.collection = db.collection(collectionName)
     // console.log('collection name:', req.collection)
@@ -69,17 +62,8 @@ app.get('/collection/:collectionName', (req, res, next) => {
     })
 })
 
-// retrieve all the objects from an collection
-app.get('/collection/:collectionName', (req, res, next) => {
-    req.collection.find({}).toArray((e, results) => {
-        if (e) return next(e)
-        res.send(results)
-    })
-})
 
-
-
-//adding post with POST
+//creating object with POST
 app.post('/collection/:collectionName', (req, res, next) => {
     req.collection.insert(req.body, (e, results) => {
     if (e) return next(e)
@@ -88,8 +72,7 @@ app.post('/collection/:collectionName', (req, res, next) => {
     })
 
 
-    //update an object with PUT
-
+//update an object with PUT
 app.put('/collection/:collectionName/:id', (req, res, next) => {
     req.collection.update(
     {_id: new ObjectID(req.params.id)},
@@ -102,18 +85,7 @@ app.put('/collection/:collectionName/:id', (req, res, next) => {
     })
     
 
-    
-//delete an object with DELETE
-// app.delete('/collection/:collectionName/:id', (req, res, next) => {
-//     req.collection.deleteOne(
-//     { _id: ObjectID(req.params.id) },(e, result) => {
-//     if (e) return next(e)
-//     res.send((result.result.n === 1) ?
-//     {msg: 'success'} : {msg: 'error'})
-//     })
-//     })
-
-    // PUT route to reduce value of specified attribute of the record in database
+// PUT route to reduce value of specified attribute of the record in database
 app.put('/collection/:collectionName/:id/reduce/:name/:value', (req, res, next) => {
 
     let value = -1 * parseInt(req.params.value);
